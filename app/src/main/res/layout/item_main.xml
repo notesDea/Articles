@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/text_item_title"
+        android:text="当时说是搬砖的命"
+        android:textSize="@dimen/textsize_title"
+        android:textStyle="bold"
+        android:layout_marginStart="@dimen/margin_item"
+        android:layout_marginTop="@dimen/margin_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:id="@+id/text_item_date"
+        android:text="发布时间：2016年8月16日 "
+        android:textSize="@dimen/textsize_date"
+        android:layout_marginStart="@dimen/margin_item"
+        android:layout_marginBottom="@dimen/margin_item"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/text_item_title" />
+
+    <ImageView
+        android:src="@drawable/ic_keyboard_arrow_right_black_24dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"/>
+</RelativeLayout>
