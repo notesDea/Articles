@@ -6,15 +6,16 @@
     android:layout_height="match_parent"
     tools:context="com.notesdea.articles.activity.MainActivity">
 
-    <com.notesdea.articles.view.RefreshView
-        android:id="@+id/refresh_main"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_refresh_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <ListView
-            android:id="@+id/list_articles"
-            android:scrollbars="none"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recycler_articles_item"
+            android:scrollbars="vertical"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
-    </com.notesdea.articles.view.RefreshView>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
 </RelativeLayout>
