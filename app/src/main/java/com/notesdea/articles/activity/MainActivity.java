@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -56,6 +57,10 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mRecycler.setAdapter(mAdapter);
         mLinearLayoutManager = new LinearLayoutManager(this);
         mRecycler.setLayoutManager(mLinearLayoutManager);
+        //添加分隔线
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(
+                this, mLinearLayoutManager.getOrientation());
+        mRecycler.addItemDecoration(dividerItemDecoration);
     }
 
     //处理下拉刷新的逻辑

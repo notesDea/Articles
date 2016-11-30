@@ -29,6 +29,7 @@ public abstract class LoadOnScrollListener extends RecyclerView.OnScrollListener
         super.onScrolled(recyclerView, dx, dy);
 
         /**
+         * todo 不用的话删掉
          LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
          mVisibleItemsCount = recyclerView.getChildCount();
          mTotalItemsCount = layoutManager.getItemCount();
@@ -46,15 +47,13 @@ public abstract class LoadOnScrollListener extends RecyclerView.OnScrollListener
     public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
         super.onScrollStateChanged(recyclerView, newState);
         LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-        int lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
+        int lastCompletelyVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition();
         int totalItemCount = layoutManager.getItemCount();
-        Log.d("LoadOnScrollListener", "lastVisibleItem = " + lastVisibleItemPosition +
-                ", totalItemCount = " + totalItemCount);
+
         if (newState == RecyclerView.SCROLL_STATE_IDLE &&
-                lastVisibleItemPosition == totalItemCount - 1) {
+                lastCompletelyVisibleItemPosition == totalItemCount - 1) {
             onLoadMore();
         }
-
     }
 
     //回调方法，在加载更多时调用，需要在里面处理加载数据的逻辑
