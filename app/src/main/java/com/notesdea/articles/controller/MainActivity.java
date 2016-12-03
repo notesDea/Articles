@@ -1,23 +1,19 @@
-package com.notesdea.articles.activity;
+package com.notesdea.articles.controller;
 
-import android.graphics.Color;
-import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 
-import com.notesdea.articles.LoadOnScrollListener;
+import com.notesdea.articles.model.LoadOnScrollListener;
 import com.notesdea.articles.R;
-import com.notesdea.articles.adapter.HomeAdapter;
+import com.notesdea.articles.model.HomeAdapter;
 import com.notesdea.articles.model.Article;
 import com.notesdea.articles.model.ArticleFactory;
 
 import java.util.List;
-import java.util.concurrent.ThreadFactory;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 

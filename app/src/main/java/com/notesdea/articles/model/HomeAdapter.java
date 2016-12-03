@@ -1,4 +1,4 @@
-package com.notesdea.articles.adapter;
+package com.notesdea.articles.model;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

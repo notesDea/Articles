@@ -1,10 +1,7 @@
-package com.notesdea.articles;
+package com.notesdea.articles.model;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
-
-import com.notesdea.articles.adapter.HomeAdapter;
 
 /**
  * Created by notes on 2016/11/30.
