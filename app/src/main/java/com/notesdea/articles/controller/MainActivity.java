@@ -10,10 +10,18 @@ import android.support.v7.widget.RecyclerView;
 import com.notesdea.articles.model.LoadOnScrollListener;
 import com.notesdea.articles.R;
 import com.notesdea.articles.model.HomeAdapter;
-import com.notesdea.articles.model.Article;
-import com.notesdea.articles.model.ArticleFactory;
+import com.notesdea.articles.model.NetworkUtils;
+import com.notesdea.articles.model.Post;
+import com.notesdea.articles.model.PostsWithStatus;
+import com.notesdea.articles.model.WpPostInterface;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener {
 
@@ -21,11 +29,17 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
     private SwipeRefreshLayout mRefreshLayout;
     //存储数据的视图
     private RecyclerView mRecycler;
+    private LinearLayoutManager mLinearLayoutManager;
     //存储数据适配器
     private HomeAdapter mAdapter;
-    private LinearLayoutManager mLinearLayoutManager;
-    //数据
-    private List<Article> mArticles = ArticleFactory.getArticles();
+    //存储的文章
+    private List<Post> mPosts = new ArrayList<>();
+    //当前的页数
+    private int mCurrentPage = 1;
+    //服务端的总页数
+    private int mTotalPages;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +47,7 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         setContentView(R.layout.activity_main);
 
         initView();
+        //设置刷新和加载数据视图
         mRefreshLayout.setOnRefreshListener(this);
         mRecycler.addOnScrollListener(new LoadOnScrollListener() {
             @Override
@@ -40,6 +55,13 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
                 loadMore();
             }
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mRefreshLayout.setRefreshing(true);
+        refreshData(1);
 
     }
 
@@ -49,14 +71,46 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
         mRefreshLayout.setColorSchemeResources(R.color.colorAccent);
 
         mRecycler = (RecyclerView) findViewById(R.id.recycler_articles_item);
-        mAdapter = new HomeAdapter(mArticles, this);
-        mRecycler.setAdapter(mAdapter);
         mLinearLayoutManager = new LinearLayoutManager(this);
         mRecycler.setLayoutManager(mLinearLayoutManager);
+        //添加适配器
+        mAdapter = new HomeAdapter(mPosts, MainActivity.this);
+        mRecycler.setAdapter(mAdapter);
         //添加分隔线
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(
                 this, mLinearLayoutManager.getOrientation());
         mRecycler.addItemDecoration(dividerItemDecoration);
+    }
+
+    //加载数据
+    private void refreshData(final int page) {
+        if (NetworkUtils.isNetworkAvailable(this)) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Retrofit retrofit = new Retrofit.Builder()
+                            .baseUrl(WpPostInterface.BASE_URL)
+                            .addConverterFactory(GsonConverterFactory.create())
+                            .build();
+                    WpPostInterface wpPostInterface = retrofit.create(WpPostInterface.class);
+                    Call<PostsWithStatus> call = wpPostInterface.getPostsByPage(page);
+                    try {
+                        PostsWithStatus postsWithStatus = call.execute().body();
+                        mTotalPages = postsWithStatus.getPages();
+                        mPosts.addAll(postsWithStatus.getPosts());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            mAdapter.notifyDataSetChanged();
+                            mRefreshLayout.setRefreshing(false);
+                        }
+                    });
+                }
+            }).start();
+        }
     }
 
     //处理下拉刷新的逻辑
@@ -68,9 +122,8 @@ public class MainActivity extends AppCompatActivity implements SwipeRefreshLayou
 
     //加载更多数据
     private void loadMore() {
-        for (int i = 0; i < 10; i++) {
-            mArticles.add(new Article("上拉加载出来的数据", "2016-11-30"));
+        if (mCurrentPage < mTotalPages) {
+            refreshData(++mCurrentPage);
         }
-        mAdapter.notifyDataSetChanged();
     }
 }
