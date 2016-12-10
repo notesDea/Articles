@@ -17,10 +17,10 @@ public class NetworkUtils {
     public static boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) context.getSystemService(Activity.CONNECTIVITY_SERVICE);
+        //todo 添加Network 19版本以下的判断方法
         Network[] networks = connectivityManager.getAllNetworks();
         for (int i = 0; i < networks.length; i++) {
             NetworkInfo info = connectivityManager.getNetworkInfo(networks[i]);
-            Log.d("NetworkUtils", info.getTypeName() + info.isConnectedOrConnecting());
             if (info.isConnectedOrConnecting()) {
                 return true;
             }
