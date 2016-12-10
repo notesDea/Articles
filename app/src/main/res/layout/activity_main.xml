@@ -7,12 +7,10 @@
     tools:context="com.notesdea.articles.controller.MainActivity">
 
 
-    <fragment
+    <FrameLayout
         android:id="@+id/fragment_container"
-        android:name="com.notesdea.articles.controller.MainFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-    </fragment>
+        android:layout_height="match_parent" />
 
 
 </RelativeLayout>

@@ -17,18 +17,26 @@ import com.notesdea.articles.R;
 public class DetailFragment extends Fragment {
 
     //文章的标题
-    private TextView textTitle,
+    private TextView mTextTitle,
         //文章的内容
-        textContent;
+        mTextContent;
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_detail, container, false);
-        textTitle = (TextView) root.findViewById(R.id.text_detail_title);
-        textContent = (TextView) root.findViewById(R.id.text_detail_content);
-
-
+        mTextTitle = (TextView) root.findViewById(R.id.text_detail_title);
+        mTextContent = (TextView) root.findViewById(R.id.text_detail_content);
         return root;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        Bundle bundle = getArguments();
+        String title = bundle.getString("title");
+        String content = bundle.getString("content");
+        mTextTitle.setText(title);
+        mTextContent.setText(content);
     }
 }
