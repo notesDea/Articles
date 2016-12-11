@@ -25,14 +25,19 @@ public class DetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_detail, container, false);
-        mTextTitle = (TextView) root.findViewById(R.id.text_detail_title);
-        mTextContent = (TextView) root.findViewById(R.id.text_detail_content);
+        initView(root);
         return root;
+    }
+
+    private void initView(View view) {
+        mTextTitle = (TextView) view.findViewById(R.id.text_detail_title);
+        mTextContent = (TextView) view.findViewById(R.id.text_detail_content);
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        //接收数据并显示
         Bundle bundle = getArguments();
         String title = bundle.getString("title");
         String content = bundle.getString("content");

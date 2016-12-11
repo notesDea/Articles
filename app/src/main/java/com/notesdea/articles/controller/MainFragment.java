@@ -35,6 +35,8 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefreshListener {
 
+    private static final String TAG = "MainFragment";
+    
     //刷新视图
     private SwipeRefreshLayout mRefreshLayout;
     //存储数据的视图
@@ -49,13 +51,22 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
     //服务端的总页数
     private int mTotalPages;
 
-    private OnReplaceFragmentListener mReplaceListener;
+    //判断是否是首次加载
+    private boolean mOnceLoad;
+
+    private OnSwitchFragmentListener mReplaceListener;
 
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mReplaceListener = (OnReplaceFragmentListener) context;
+        mReplaceListener = (OnSwitchFragmentListener) context;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mOnceLoad = true;
     }
 
     @Nullable
@@ -63,23 +74,7 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View root = inflater.inflate(R.layout.fragment_main, container, false);
         initView(root);
-
-
-        //设置刷新和加载数据视图
-        mRefreshLayout.setOnRefreshListener(this);
-        mRecycler.addOnScrollListener(new LoadOnScrollListener() {
-            @Override
-            public void onLoadMore() {
-                loadMore();
-            }
-        });
-        mRecycler.addOnItemTouchListener(new ItemClickListener(mRecycler, new ItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                Post post = mPosts.get(position);
-                mReplaceListener.onReplace(post.getTitle(), post.getContent());
-            }
-        }));
+        initListener();
         return root;
     }
 
@@ -100,16 +95,38 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
         mRecycler.addItemDecoration(dividerItemDecoration);
     }
 
+    //初始化监听事件
+    private void initListener() {
+        //设置刷新和加载数据视图
+        mRefreshLayout.setOnRefreshListener(this);
+        mRecycler.addOnScrollListener(new LoadOnScrollListener() {
+            @Override
+            public void onLoadMore() {
+                loadMore();
+            }
+        });
+        mRecycler.addOnItemTouchListener(new ItemClickListener(new ItemClickListener.OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Post post = mPosts.get(position);
+                mReplaceListener.onSwitchDetailFragment(post.getTitle(), post.getContent());
+            }
+        }));
+    }
+
     @Override
     public void onStart() {
         super.onStart();
-        mRefreshLayout.setRefreshing(true);
-        refreshData(1);
+        if (mOnceLoad) {
+            mRefreshLayout.setRefreshing(true);
+            refreshData(1);
+            mOnceLoad = false;
+        }
     }
 
     @Override
     public void onRefresh() {
-//      todo 执行刷新逻辑
+//      todo 刷新操作 局部刷新或全部刷新。
         mRefreshLayout.setRefreshing(false);
     }
 
@@ -120,18 +137,20 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
         }
     }
 
-    //加载数据
+    /**
+     * 刷新数据
+     * @param page 服务端上加载第 page 页的数据
+     */
     private void refreshData(final int page) {
         if (NetworkUtils.isNetworkAvailable(getActivity())) {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    //构建实例
                     Retrofit retrofit = new Retrofit.Builder()
                             .baseUrl(WpPostInterface.BASE_URL)
                             .addConverterFactory(GsonConverterFactory.create())
                             .build();
-                    //实例化接口
+
                     WpPostInterface wpPostInterface = retrofit.create(WpPostInterface.class);
                     Call<PostsWithStatus> call = wpPostInterface.getPostsByPage(page);
                     try {
@@ -154,8 +173,8 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
     }
 
     //切换 Fragment 监听器
-    public interface OnReplaceFragmentListener {
-        //切换 Fragment
-        void onReplace(String title, String content);
+    public interface OnSwitchFragmentListener {
+        //切换到 DetailFragment
+        void onSwitchDetailFragment(String title, String content);
     }
 }

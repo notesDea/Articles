@@ -19,7 +19,7 @@ public class ItemClickListener extends RecyclerView.SimpleOnItemTouchListener {
     //手势按下时的 Y 坐标
     private float mLastPointY;
 
-    public ItemClickListener(final RecyclerView recyclerView, final OnItemClickListener listener) {
+    public ItemClickListener(final OnItemClickListener listener) {
         mClickListener = listener;
     }
 
@@ -65,7 +65,7 @@ public class ItemClickListener extends RecyclerView.SimpleOnItemTouchListener {
 
     /**
      * 计算 num 的平方
-     * @param num 被康衢的数字
+     * @param num 被平方的数字
      * @return 返回距离
      */
     private double pow(double num) {
