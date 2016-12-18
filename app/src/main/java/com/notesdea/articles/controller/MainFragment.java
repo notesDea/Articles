@@ -1,5 +1,6 @@
 package com.notesdea.articles.controller;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -14,20 +15,14 @@ import android.view.ViewGroup;
 
 import com.notesdea.articles.ItemClickListener;
 import com.notesdea.articles.R;
+import com.notesdea.articles.model.CallbackJson;
 import com.notesdea.articles.model.HomeAdapter;
 import com.notesdea.articles.model.LoadOnScrollListener;
 import com.notesdea.articles.model.NetworkUtils;
 import com.notesdea.articles.model.Post;
-import com.notesdea.articles.model.PostsWithStatus;
-import com.notesdea.articles.model.WpPostInterface;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * Created by notes on 2016/12/10.
@@ -47,9 +42,9 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
     //存储的文章
     private List<Post> mPosts = new ArrayList<>();
     //当前的页数
-    private int mCurrentPage = 1;
-    //服务端的总页数
-    private int mTotalPages;
+    private int mPage;
+    //是否是刷新
+    private boolean mIsRefresh;
 
     //判断是否是首次加载
     private boolean mOnceLoad;
@@ -103,6 +98,7 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
             @Override
             public void onLoadMore() {
                 loadMore();
+                //回来执行的 todo loadMore可否不用？ 记录笔记
             }
         });
         mRecycler.addOnItemTouchListener(new ItemClickListener(new ItemClickListener.OnItemClickListener() {
@@ -119,56 +115,45 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
         super.onStart();
         if (mOnceLoad) {
             mRefreshLayout.setRefreshing(true);
-            refreshData(1);
+            refreshData(true);
             mOnceLoad = false;
         }
     }
 
     @Override
     public void onRefresh() {
-//      todo 刷新操作 局部刷新或全部刷新。
+        mPage = 1;
+        //todo 添加刷新数据的逻辑
         mRefreshLayout.setRefreshing(false);
     }
 
     //加载更多数据
     private void loadMore() {
-        if (mCurrentPage < mTotalPages) {
-            refreshData(++mCurrentPage);
-        }
+        refreshData(false);
     }
 
     /**
      * 刷新数据
-     * @param page 服务端上加载第 page 页的数据
+     * @param isRefresh 判断是否是刷新状态
      */
-    private void refreshData(final int page) {
+    private void refreshData(final boolean isRefresh) {
+         //获取原始数据
         if (NetworkUtils.isNetworkAvailable(getActivity())) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    Retrofit retrofit = new Retrofit.Builder()
-                            .baseUrl(WpPostInterface.BASE_URL)
-                            .addConverterFactory(GsonConverterFactory.create())
-                            .build();
+            NetworkUtils.requestRawData(mPage, isRefresh, new CallbackJson<List<Post>>() {
 
-                    WpPostInterface wpPostInterface = retrofit.create(WpPostInterface.class);
-                    Call<PostsWithStatus> call = wpPostInterface.getPostsByPage(page);
-                    try {
-                        PostsWithStatus postsWithStatus = call.execute().body();
-                        mTotalPages = postsWithStatus.getPages();
-                        mPosts.addAll(postsWithStatus.getPosts());
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                @Override
+                public void onSuccess(List<Post> result) {
+                    if (isRefresh) {
+                        mPosts.clear();
+                        mPage = 2;
+                    } else {
+                        mPage++;
                     }
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            mAdapter.notifyDataSetChanged();
-                            mRefreshLayout.setRefreshing(false);
-                        }
-                    });
+                    mPosts.addAll(result);
+                    mAdapter.notifyDataSetChanged();
+                    mRefreshLayout.setRefreshing(false);
                 }
-            }).start();
+            });
         }
     }
 

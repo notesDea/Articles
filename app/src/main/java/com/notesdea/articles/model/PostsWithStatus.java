@@ -1,5 +1,7 @@
 package com.notesdea.articles.model;
 
+import com.google.gson.Gson;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,5 +59,9 @@ public class PostsWithStatus {
 
     public void setPosts(List<Post> posts) {
         this.posts = posts;
+    }
+
+    public static PostsWithStatus parseJson(String json) {
+        return new Gson().fromJson(json, PostsWithStatus.class);
     }
 }

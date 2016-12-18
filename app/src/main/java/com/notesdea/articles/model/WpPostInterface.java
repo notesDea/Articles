@@ -1,7 +1,10 @@
 package com.notesdea.articles.model;
 
+import com.google.gson.Gson;
+
 import java.util.Map;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.http.FormUrlEncoded;
@@ -31,7 +34,13 @@ public interface WpPostInterface {
     @GET("get_posts/")
     Call<PostsWithStatus> getPostsByPage(@Query("page") int page);
 
+    //请求获取某一页的原始数据
+    @GET("get_posts/")
+    Call<ResponseBody> getRawPostsByPage(@Query("page") int page);
+
     //通过id获取一条数据
     @GET("get_post/")
     Call<SinglePostWithStatus> getPostById(@Query("post_id") String id);
+
+
 }

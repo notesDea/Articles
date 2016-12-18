@@ -1,9 +1,12 @@
 package com.notesdea.articles.controller;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.notesdea.articles.R;
+import com.notesdea.articles.data.CachedDBHelper;
 
 public class MainActivity extends AppCompatActivity implements MainFragment.OnSwitchFragmentListener {
 
@@ -17,6 +20,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnSw
         getFragmentManager().beginTransaction()
                 .add(R.id.fragment_container, mainFragment)
                 .commit();
+
+        //todo 创建数据库
+        CachedDBHelper dbHelper = new CachedDBHelper(this);
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
     }
 
     //切换 DetailFragment
