@@ -11,12 +11,13 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
-import com.notesdea.articles.ItemClickListener;
 import com.notesdea.articles.R;
 import com.notesdea.articles.model.CallbackJson;
 import com.notesdea.articles.model.HomeAdapter;
-import com.notesdea.articles.model.LoadOnScrollListener;
+import com.notesdea.articles.model.OnItemClickListener;
+import com.notesdea.articles.model.OnScrollListener;
 import com.notesdea.articles.model.NetworkUtils;
 import com.notesdea.articles.model.OnLoadMoreListener;
 import com.notesdea.articles.model.OnSwitchFragmentListener;
@@ -30,10 +31,8 @@ import java.util.List;
  */
 
 public class MainFragment extends Fragment  implements
-        SwipeRefreshLayout.OnRefreshListener, OnLoadMoreListener, ItemClickListener.OnItemClickListener {
+        SwipeRefreshLayout.OnRefreshListener, OnLoadMoreListener{
 
-    private static final String TAG = "MainFragment";
-    
     //刷新视图
     private SwipeRefreshLayout mRefreshLayout;
     //存储数据的视图
@@ -45,8 +44,6 @@ public class MainFragment extends Fragment  implements
     private List<Post> mPosts = new ArrayList<>();
     //当前的页数
     private int mPage;
-    //是否是刷新
-    private boolean mIsRefresh; //todo 用不到就删了
 
     //判断是否是首次加载
     private boolean mOnceLoad;
@@ -97,11 +94,20 @@ public class MainFragment extends Fragment  implements
         //刷新监听
         mRefreshLayout.setOnRefreshListener(this);
         //加载监听
-        LoadOnScrollListener loadOnScrollListener = new LoadOnScrollListener();
-        loadOnScrollListener.setLoadMoreListener(this);
-        mRecycler.addOnScrollListener(loadOnScrollListener);
+        OnScrollListener onScrollListener = new OnScrollListener();
+        onScrollListener.setLoadMoreListener(this);
+        mRecycler.addOnScrollListener(onScrollListener);
         //点击Item监听
-        mRecycler.addOnItemTouchListener(new ItemClickListener(this));
+        mRecycler.addOnItemTouchListener(new OnItemClickListener() {
+            @Override
+            public void onItemClick(View view, int position) {
+                Post post = mPosts.get(position);
+                Bundle bundle = new Bundle();
+                bundle.putString("title", post.getTitle());
+                bundle.putString("content", post.getContent());
+                mSwitchListener.onSwitchFragmentWithData(bundle);
+            }
+        });
     }
 
     @Override
@@ -119,7 +125,6 @@ public class MainFragment extends Fragment  implements
     public void onRefresh() {
         mPage = 1;
         getData(true);
-        mRefreshLayout.setRefreshing(false);
     }
 
     //在上拉加载数据时调用
@@ -128,39 +133,33 @@ public class MainFragment extends Fragment  implements
         getData(false);
     }
 
-    //在点击Item时调用
-    @Override
-    public void onItemClick(View view, int position) {
-        Post post = mPosts.get(position);
-        Bundle bundle = new Bundle();
-        bundle.putString("title", post.getTitle());
-        bundle.putString("content", post.getContent());
-        mSwitchListener.onSwitchFragmentWithData(bundle);
-    }
-
     /**
      * 获取数据（加载或刷新）
      * @param isRefresh 判断是否是刷新状态，如果为 false，则启用加载功能。
      */
     private void getData(final boolean isRefresh) {
-         //获取原始数据 todo 不连网它会自动读取本地数据，所以不需要判断
-        if (NetworkUtils.isNetworkAvailable(getActivity())) {
-            NetworkUtils.requestRawData(mPage, isRefresh, new CallbackJson<List<Post>>() {
+         //获取原始数据
+        NetworkUtils.requestRawData(mPage, isRefresh, new CallbackJson<List<Post>>() {
 
-                @Override
-                public void onSuccess(List<Post> result) {
-                    if (isRefresh) {
-                        mPosts.clear();
-                        mPage = 2;
-                    } else {
-                        mPage++;
-                    }
-                    mPosts.addAll(result);
-                    mAdapter.notifyDataSetChanged();
-                    mRefreshLayout.setRefreshing(false);
+            @Override
+            public void onSuccess(List<Post> result) {
+                if (isRefresh) {
+                    mPosts.clear();
+                    mPage = 2;
+                } else {
+                    mPage++;
                 }
-            });
-        }
+                mPosts.addAll(result);
+                mAdapter.notifyDataSetChanged();
+                mRefreshLayout.setRefreshing(false);
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Toast.makeText(getActivity().getApplicationContext(), message, Toast.LENGTH_SHORT).show();
+                mRefreshLayout.setRefreshing(false);
+            }
+        });
     }
 
     public void setOnSwitchFragmentListener(OnSwitchFragmentListener onSwitchFragmentListener) {

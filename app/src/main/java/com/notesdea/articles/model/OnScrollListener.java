@@ -2,12 +2,14 @@ package com.notesdea.articles.model;
 
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.MotionEvent;
+import android.view.View;
 
 /**
  * Created by notes on 2016/11/30.
  */
-
-public class LoadOnScrollListener extends RecyclerView.OnScrollListener {
+//实现点击功能的滚动监听器
+public class OnScrollListener extends RecyclerView.OnScrollListener {
 
     private OnLoadMoreListener mLoadMoreListener;
 
@@ -32,4 +34,7 @@ public class LoadOnScrollListener extends RecyclerView.OnScrollListener {
     public void setLoadMoreListener(OnLoadMoreListener loadMoreListener) {
         this.mLoadMoreListener = loadMoreListener;
     }
+
+
+
 }

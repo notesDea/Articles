@@ -1,7 +1,10 @@
-package com.notesdea.articles;
+package com.notesdea.articles.model;
+
+/**
+ * Created by notes on 2016/12/19.
+ */
 
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -9,9 +12,8 @@ import android.view.View;
  * Created by notes on 2016/12/9.
  */
 
-public class ItemClickListener extends RecyclerView.SimpleOnItemTouchListener {
+public abstract class OnItemClickListener extends RecyclerView.SimpleOnItemTouchListener {
 
-    private OnItemClickListener mClickListener;
     //是否是可点击状态
     private boolean mClickAble;
     //手势按下时的 X 坐标
@@ -19,10 +21,10 @@ public class ItemClickListener extends RecyclerView.SimpleOnItemTouchListener {
     //手势按下时的 Y 坐标
     private float mLastPointY;
 
-    public ItemClickListener(final OnItemClickListener listener) {
-        mClickListener = listener;
+    public OnItemClickListener() {
     }
 
+    //在拦截事件中判断是否可点击，并且调用点击Item的方法
     @Override
     public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
         int action = e.getActionMasked();
@@ -34,8 +36,8 @@ public class ItemClickListener extends RecyclerView.SimpleOnItemTouchListener {
                 break;
             case MotionEvent.ACTION_UP:
                 View childView = rv.findChildViewUnder(e.getX(), e.getY());
-                if (childView != null && mClickListener != null && mClickAble) {
-                    mClickListener.onItemClick(childView, rv.getChildAdapterPosition(childView));
+                if (childView != null && mClickAble) {
+                    onItemClick(childView, rv.getChildAdapterPosition(childView));
                 }
                 break;
             case MotionEvent.ACTION_MOVE:
@@ -72,13 +74,13 @@ public class ItemClickListener extends RecyclerView.SimpleOnItemTouchListener {
         return Math.pow(num, 2);
     }
 
-    //item点击的回调接口
-    public interface OnItemClickListener {
-        /**
-         * 在 Item 被点击时调用
-         * @param view 被点击的视图
-         * @param position 被点击的条目的位置
-         */
-        void onItemClick(View view, int position);
-    }
+
+    /**
+     * 在 Item 被点击时调用
+     * @param view 被点击的视图
+     * @param position 被点击的条目的位置
+     */
+     public abstract void onItemClick(View view, int position);
+
+
 }

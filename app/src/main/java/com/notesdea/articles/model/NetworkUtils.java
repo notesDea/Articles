@@ -10,6 +10,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 
+import com.notesdea.articles.BaseApplication;
 import com.notesdea.articles.data.DBManager;
 
 import java.io.IOException;
@@ -38,7 +39,7 @@ public class NetworkUtils {
     }
 
     /**
-     * 向服务端请求原始数据
+     * 如果缓存里有数据，先显示缓存的数据。再加载服务端数据。
      * @param page 请求服务端第page页的数据
      * @param isCache 判断是否需要缓存，如果是刷新可能需要缓存，如果是加载则不需要
      * @param callbackJson 从服务端回调回来的数据，进行逻辑处理。
@@ -49,6 +50,10 @@ public class NetworkUtils {
         final String url = WpPostInterface.BASE_URL + "get_posts/?page=" + page;
 
         queryCachedData(dbManager, url, callbackJson);
+        if (!NetworkUtils.isNetworkAvailable(BaseApplication.getContext()) && isCache) {
+            callbackJson.onFailure("网络不可用");
+            return;
+        }
         requestData(dbManager, page, url, isCache, callbackJson);
     }
 

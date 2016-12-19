@@ -17,17 +17,16 @@ public class MainActivity extends AppCompatActivity implements OnSwitchFragmentL
         setContentView(R.layout.activity_main);
 
         MainFragment mainFragment = new MainFragment();
-        mainFragment.setOnSwitchFragmentListener(this);//todo 测试行不行 是否有完成任务打勾 删除了数据库代码
+        mainFragment.setOnSwitchFragmentListener(this);
         getFragmentManager().beginTransaction()
                 .add(R.id.fragment_container, mainFragment)
                 .commit();
     }
 
-    //切换 DetailFragment
+    //切换Fragment
     @Override
     public void onSwitchFragmentWithData(Bundle bundle) {
         DetailFragment detailFragment = new DetailFragment();
-
         detailFragment.setArguments(bundle);
         getFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, detailFragment)

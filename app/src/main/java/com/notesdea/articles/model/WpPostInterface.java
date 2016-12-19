@@ -16,7 +16,7 @@ import retrofit2.http.QueryMap;
 /**
  * Created by notes on 2016/12/6.
  */
-
+//用于与服务端通信的接口
 public interface WpPostInterface {
     //服务端的url
     String BASE_URL = "http://1.notesdea.applinzi.com/api/";
@@ -37,10 +37,4 @@ public interface WpPostInterface {
     //请求获取某一页的原始数据
     @GET("get_posts/")
     Call<ResponseBody> getRawPostsByPage(@Query("page") int page);
-
-    //通过id获取一条数据
-    @GET("get_post/")
-    Call<SinglePostWithStatus> getPostById(@Query("post_id") String id);
-
-
 }

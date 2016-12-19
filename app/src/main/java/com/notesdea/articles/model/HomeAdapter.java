@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by notesdea on 11/18/16.
  */
-
+//显示主页的Item的适配器
 public class HomeAdapter extends RecyclerView.Adapter{
 
 
@@ -31,11 +31,14 @@ public class HomeAdapter extends RecyclerView.Adapter{
     }
 
     @Override
+    public int getItemCount() {
+        return mPosts.size();
+    }
+
+    @Override
     public int getItemViewType(int position) {
         return VIEW_TYPE_CONTENT;
     }
-
-
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -46,7 +49,6 @@ public class HomeAdapter extends RecyclerView.Adapter{
         }
         return null;
     }
-
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, final int position) {
@@ -60,13 +62,8 @@ public class HomeAdapter extends RecyclerView.Adapter{
         }
     }
 
-    @Override
-    public int getItemCount() {
-        return mPosts.size();
-    }
-
     //持有内容视图
-    class ContentViewHolder extends RecyclerView.ViewHolder {
+     class ContentViewHolder extends RecyclerView.ViewHolder {
         private TextView textTitle;
         private TextView textDate;
 

@@ -19,9 +19,13 @@ public class DBManager {
 
     public DBManager() {
         mDbHelper = new CachedDBHelper(BaseApplication.getContext());
-//        mDbHelper = new CachedDBHelper(context);
     }
 
+    /**
+     * 插入数据
+     * @param url 插入的url列
+     * @param data 插入的json数据列
+     */
     public synchronized void insertData(String url, String data) {
         mDb = mDbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
