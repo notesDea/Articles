@@ -69,11 +69,9 @@ public class HomeAdapter extends RecyclerView.Adapter{
     class ContentViewHolder extends RecyclerView.ViewHolder {
         private TextView textTitle;
         private TextView textDate;
-        private View mItemView;
 
         public ContentViewHolder(View itemView) {
             super(itemView);
-            mItemView = itemView;
             textTitle = (TextView) itemView.findViewById(R.id.text_item_title);
             textDate = (TextView) itemView.findViewById(R.id.text_item_date);
         }

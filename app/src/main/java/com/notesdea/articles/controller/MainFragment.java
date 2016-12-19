@@ -1,6 +1,5 @@
 package com.notesdea.articles.controller;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.os.Bundle;
@@ -19,6 +18,8 @@ import com.notesdea.articles.model.CallbackJson;
 import com.notesdea.articles.model.HomeAdapter;
 import com.notesdea.articles.model.LoadOnScrollListener;
 import com.notesdea.articles.model.NetworkUtils;
+import com.notesdea.articles.model.OnLoadMoreListener;
+import com.notesdea.articles.model.OnSwitchFragmentListener;
 import com.notesdea.articles.model.Post;
 
 import java.util.ArrayList;
@@ -28,7 +29,8 @@ import java.util.List;
  * Created by notes on 2016/12/10.
  */
 
-public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefreshListener {
+public class MainFragment extends Fragment  implements
+        SwipeRefreshLayout.OnRefreshListener, OnLoadMoreListener, ItemClickListener.OnItemClickListener {
 
     private static final String TAG = "MainFragment";
     
@@ -44,18 +46,18 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
     //当前的页数
     private int mPage;
     //是否是刷新
-    private boolean mIsRefresh;
+    private boolean mIsRefresh; //todo 用不到就删了
 
     //判断是否是首次加载
     private boolean mOnceLoad;
-
-    private OnSwitchFragmentListener mReplaceListener;
+    //切换Fragment监听器
+    private OnSwitchFragmentListener mSwitchListener;
 
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        mReplaceListener = (OnSwitchFragmentListener) context;
+        mSwitchListener = (OnSwitchFragmentListener) context;
     }
 
     @Override
@@ -92,22 +94,14 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
 
     //初始化监听事件
     private void initListener() {
-        //设置刷新和加载数据视图
+        //刷新监听
         mRefreshLayout.setOnRefreshListener(this);
-        mRecycler.addOnScrollListener(new LoadOnScrollListener() {
-            @Override
-            public void onLoadMore() {
-                loadMore();
-                //回来执行的 todo loadMore可否不用？ 记录笔记
-            }
-        });
-        mRecycler.addOnItemTouchListener(new ItemClickListener(new ItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position) {
-                Post post = mPosts.get(position);
-                mReplaceListener.onSwitchDetailFragment(post.getTitle(), post.getContent());
-            }
-        }));
+        //加载监听
+        LoadOnScrollListener loadOnScrollListener = new LoadOnScrollListener();
+        loadOnScrollListener.setLoadMoreListener(this);
+        mRecycler.addOnScrollListener(loadOnScrollListener);
+        //点击Item监听
+        mRecycler.addOnItemTouchListener(new ItemClickListener(this));
     }
 
     @Override
@@ -115,29 +109,41 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
         super.onStart();
         if (mOnceLoad) {
             mRefreshLayout.setRefreshing(true);
-            refreshData(true);
+            onRefresh();
             mOnceLoad = false;
         }
     }
 
+    //在下拉刷新或是首次启动应用时调用
     @Override
     public void onRefresh() {
         mPage = 1;
-        //todo 添加刷新数据的逻辑
+        getData(true);
         mRefreshLayout.setRefreshing(false);
     }
 
-    //加载更多数据
-    private void loadMore() {
-        refreshData(false);
+    //在上拉加载数据时调用
+    @Override
+    public void onLoadMore() {
+        getData(false);
+    }
+
+    //在点击Item时调用
+    @Override
+    public void onItemClick(View view, int position) {
+        Post post = mPosts.get(position);
+        Bundle bundle = new Bundle();
+        bundle.putString("title", post.getTitle());
+        bundle.putString("content", post.getContent());
+        mSwitchListener.onSwitchFragmentWithData(bundle);
     }
 
     /**
-     * 刷新数据
-     * @param isRefresh 判断是否是刷新状态
+     * 获取数据（加载或刷新）
+     * @param isRefresh 判断是否是刷新状态，如果为 false，则启用加载功能。
      */
-    private void refreshData(final boolean isRefresh) {
-         //获取原始数据
+    private void getData(final boolean isRefresh) {
+         //获取原始数据 todo 不连网它会自动读取本地数据，所以不需要判断
         if (NetworkUtils.isNetworkAvailable(getActivity())) {
             NetworkUtils.requestRawData(mPage, isRefresh, new CallbackJson<List<Post>>() {
 
@@ -157,9 +163,7 @@ public class MainFragment extends Fragment  implements SwipeRefreshLayout.OnRefr
         }
     }
 
-    //切换 Fragment 监听器
-    public interface OnSwitchFragmentListener {
-        //切换到 DetailFragment
-        void onSwitchDetailFragment(String title, String content);
+    public void setOnSwitchFragmentListener(OnSwitchFragmentListener onSwitchFragmentListener) {
+        this.mSwitchListener = onSwitchFragmentListener;
     }
 }
