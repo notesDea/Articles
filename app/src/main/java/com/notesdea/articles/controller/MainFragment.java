@@ -18,7 +18,7 @@ import com.notesdea.articles.model.CallbackJson;
 import com.notesdea.articles.model.HomeAdapter;
 import com.notesdea.articles.model.OnItemClickListener;
 import com.notesdea.articles.model.OnScrollListener;
-import com.notesdea.articles.model.NetworkUtils;
+import com.notesdea.articles.model.RequestManager;
 import com.notesdea.articles.model.OnLoadMoreListener;
 import com.notesdea.articles.model.OnSwitchFragmentListener;
 import com.notesdea.articles.model.Post;
@@ -139,7 +139,7 @@ public class MainFragment extends Fragment  implements
      */
     private void getData(final boolean isRefresh) {
          //获取原始数据
-        NetworkUtils.requestRawData(mPage, isRefresh, new CallbackJson<List<Post>>() {
+        RequestManager.requestRawData(mPage, isRefresh, new CallbackJson<List<Post>>() {
 
             @Override
             public void onSuccess(List<Post> result) {

@@ -3,12 +3,9 @@ package com.notesdea.articles.model;
 import android.app.Activity;
 import android.content.Context;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.Build;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.text.Html;
 
 import com.notesdea.articles.BaseApplication;
 import com.notesdea.articles.data.DBManager;
@@ -28,7 +25,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  */
 
 //网络相关的工具类
-public class NetworkUtils {
+public class RequestManager {
 
     //判断网络是否可用
     public static boolean isNetworkAvailable(Context context) {
@@ -50,7 +47,7 @@ public class NetworkUtils {
         final String url = WpPostInterface.BASE_URL + "get_posts/?page=" + page;
 
         queryCachedData(dbManager, url, callbackJson);
-        if (!NetworkUtils.isNetworkAvailable(BaseApplication.getContext()) && isCache) {
+        if (!RequestManager.isNetworkAvailable(BaseApplication.getContext()) && isCache) {
             callbackJson.onFailure("网络不可用");
             return;
         }
@@ -65,6 +62,7 @@ public class NetworkUtils {
      */
     private static void queryCachedData(DBManager dbManager, String url, CallbackJson callbackJson) {
         String json = dbManager.getData(url);
+
         if (!"".equals(json)) {
             List<Post> posts = PostsWithStatus.parseJson(json).getPosts();
             callbackJson.onSuccess(posts);
@@ -92,7 +90,13 @@ public class NetworkUtils {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 try {
-                    String json = response.body().string();
+                    String json;
+                    if (Build.VERSION.SDK_INT >= 24) {
+                        json = Html.fromHtml(response.body().string(),
+                                Html.FROM_HTML_MODE_LEGACY).toString();
+                    } else {
+                        json = Html.fromHtml(response.body().string()).toString();
+                    }
                     if (isCache) {
                         dbManager.insertData(url, json);
                     }
