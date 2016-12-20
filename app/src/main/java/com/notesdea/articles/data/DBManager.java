@@ -32,7 +32,7 @@ public class DBManager {
         values.put(CachedDBHelper.URL, url);
         values.put(CachedDBHelper.DATA, data);
         values.put(CachedDBHelper.TIME, System.currentTimeMillis());
-        mDb.insert(CachedDBHelper.TABLE_NAME, null, values);
+        mDb.replace(CachedDBHelper.TABLE_NAME, null, values);
         mDb.close();
     }
 

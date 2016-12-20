@@ -5,7 +5,9 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.support.annotation.Nullable;
 import android.text.Html;
+import android.util.Log;
 
 import com.notesdea.articles.BaseApplication;
 import com.notesdea.articles.data.DBManager;
@@ -38,20 +40,29 @@ public class RequestManager {
     /**
      * 如果缓存里有数据，先显示缓存的数据。再加载服务端数据。
      * @param page 请求服务端第page页的数据
-     * @param isCache 判断是否需要缓存，如果是刷新可能需要缓存，如果是加载则不需要
+     * @param isRefreshing 判断是否需要缓存，如果是刷新可能需要缓存，如果是加载则不需要
      * @param callbackJson 从服务端回调回来的数据，进行逻辑处理。
      */
-    public static void requestRawData(final int page, boolean isCache ,
-                                      final CallbackJson callbackJson) {
+    public static void requestRawData(int page, boolean isRefreshing ,
+                                      CallbackJson callbackJson) {
         DBManager dbManager = new DBManager();
-        final String url = WpPostInterface.BASE_URL + "get_posts/?page=" + page;
+        String url = WpPostInterface.BASE_URL + "get_posts/?page=" + page;
 
-        queryCachedData(dbManager, url, callbackJson);
-        if (!RequestManager.isNetworkAvailable(BaseApplication.getContext()) && isCache) {
-            callbackJson.onFailure("网络不可用");
-            return;
+        if (isRefreshing) {
+            String cachedJson = queryCachedData(dbManager, url, callbackJson);
+            if (!RequestManager.isNetworkAvailable(BaseApplication.getContext())) {
+                callbackJson.onFailure("网络不可用");
+                return;
+            }
+            requestData(dbManager, page, url, cachedJson, callbackJson);
+        } else {
+            if (!RequestManager.isNetworkAvailable(BaseApplication.getContext())) {
+                queryCachedData(dbManager, url, callbackJson);
+            } else {
+                requestData(dbManager, page, url, null, callbackJson);
+            }
         }
-        requestData(dbManager, page, url, isCache, callbackJson);
+
     }
 
     /**
@@ -60,13 +71,13 @@ public class RequestManager {
      * @param url 通过url来查询
      * @param callbackJson 回调
      */
-    private static void queryCachedData(DBManager dbManager, String url, CallbackJson callbackJson) {
+    private static String queryCachedData(DBManager dbManager, String url, CallbackJson callbackJson) {
         String json = dbManager.getData(url);
-
         if (!"".equals(json)) {
             List<Post> posts = PostsWithStatus.parseJson(json).getPosts();
             callbackJson.onSuccess(posts);
         }
+        return json;
     }
 
     /**
@@ -74,11 +85,11 @@ public class RequestManager {
      * @param dbManager 用来插入数据到数据库
      * @param page 服务端请求第page页
      * @param url 服务端请求的url
-     * @param isCache 是否需要缓存
+     * @param cachedJson 与已缓存的数据比较，如果有改变则代替旧数据。如果为 #null 而请求新数据
      * @param callbackJson 回调方法
      */
     private static void requestData(final DBManager dbManager, int page, final String url,
-                                    final boolean isCache, final CallbackJson callbackJson) {
+                                    @Nullable final String cachedJson, final CallbackJson callbackJson) {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(WpPostInterface.BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -97,12 +108,12 @@ public class RequestManager {
                     } else {
                         json = Html.fromHtml(response.body().string()).toString();
                     }
-                    if (isCache) {
+                    if (cachedJson == null || !cachedJson.equals(json)) {
                         dbManager.insertData(url, json);
+                        List<Post> posts = PostsWithStatus.parseJson(json).getPosts();
+                        callbackJson.onSuccess(posts);
                     }
 
-                    List<Post> posts = PostsWithStatus.parseJson(json).getPosts();
-                    callbackJson.onSuccess(posts);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
