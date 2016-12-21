@@ -1,6 +1,7 @@
 package com.notesdea.articles.controller;
 
 import android.content.Intent;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,7 +30,6 @@ public class MainActivity extends AppCompatActivity implements
 
     //工具栏
     private Toolbar mToolbar;
-
     //刷新视图
     private SwipeRefreshLayout mRefreshLayout;
     //存储数据的视图
@@ -53,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements
         initView();
         initListener();
         mOnceLoad = true;
-        Log.d("MainActivity", "onCreate() called");
     }
 
     @Override
@@ -83,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(
                 this, mLinearLayoutManager.getOrientation());
         mRecycler.addItemDecoration(dividerItemDecoration);
+
     }
 
     //初始化监听事件

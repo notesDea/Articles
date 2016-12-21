@@ -5,4 +5,5 @@
     <string name="release_to_refresh">释放更新</string>
     <string name="refreshing">加载中</string>
     <string name="all_back">后退</string>
+    <string name="all_loading">正在加载</string>
 </resources>
