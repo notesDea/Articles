@@ -1,15 +1,12 @@
 package com.notesdea.articles.controller;
 
 import android.content.Intent;
-import android.support.design.widget.Snackbar;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -17,21 +14,22 @@ import com.notesdea.articles.R;
 import com.notesdea.articles.model.CallbackJson;
 import com.notesdea.articles.model.HomeAdapter;
 import com.notesdea.articles.model.OnItemClickListener;
-import com.notesdea.articles.model.OnLoadMoreListener;
-import com.notesdea.articles.model.OnScrollListener;
 import com.notesdea.articles.model.Post;
 import com.notesdea.articles.model.RequestManager;
+import com.notesdea.articles.model.refreshload.OnLoadMoreListener;
+import com.notesdea.articles.model.refreshload.OnRefreshListener;
+import com.notesdea.articles.model.refreshload.view.SwipeToLoadLayout;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements
-        SwipeRefreshLayout.OnRefreshListener, OnLoadMoreListener {
+        OnRefreshListener, OnLoadMoreListener {
 
     //工具栏
     private Toolbar mToolbar;
-    //刷新视图
-    private SwipeRefreshLayout mRefreshLayout;
+    //todo add annotation
+    private SwipeToLoadLayout mSwipeToLoadLayout;
     //存储数据的视图
     private RecyclerView mRecycler;
     private LinearLayoutManager mLinearLayoutManager;
@@ -42,9 +40,6 @@ public class MainActivity extends AppCompatActivity implements
     //当前的页数
     private int mPage;
 
-    //判断是否是首次加载
-    private boolean mOnceLoad;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,27 +47,23 @@ public class MainActivity extends AppCompatActivity implements
 
         initView();
         initListener();
-        mOnceLoad = true;
-    }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-        if (mOnceLoad) {
-            mRefreshLayout.setRefreshing(true);
-            onRefresh();
-            mOnceLoad = false;
-        }
+        mSwipeToLoadLayout.post(new Runnable() {
+            @Override
+            public void run() {
+                mSwipeToLoadLayout.setRefreshing(true);
+            }
+        });
     }
 
     //初始化视图
     private void initView() {
         mToolbar = (Toolbar) findViewById(R.id.toolbar_main);
         setSupportActionBar(mToolbar);
-        mRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
-        mRefreshLayout.setColorSchemeResources(R.color.colorAccent);
-
-        mRecycler = (RecyclerView) findViewById(R.id.recycler_articles_item);
+        mSwipeToLoadLayout = (SwipeToLoadLayout) findViewById(R.id.swipe_refresh_layout);
+        mSwipeToLoadLayout.setOnRefreshListener(this);
+        mSwipeToLoadLayout.setOnLoadMoreListener(this);
+        mRecycler = (RecyclerView) findViewById(R.id.swipe_target);
         mLinearLayoutManager = new LinearLayoutManager(this);
         mRecycler.setLayoutManager(mLinearLayoutManager);
         //添加适配器
@@ -87,12 +78,6 @@ public class MainActivity extends AppCompatActivity implements
 
     //初始化监听事件
     private void initListener() {
-        //刷新监听
-        mRefreshLayout.setOnRefreshListener(this);
-        //加载监听
-        OnScrollListener onScrollListener = new OnScrollListener();
-        onScrollListener.setLoadMoreListener(this);
-        mRecycler.addOnScrollListener(onScrollListener);
         //点击Item监听
         mRecycler.addOnItemTouchListener(new OnItemClickListener() {
             @Override
@@ -137,13 +122,15 @@ public class MainActivity extends AppCompatActivity implements
                 }
                 mPosts.addAll(result);
                 mAdapter.notifyDataSetChanged();
-                mRefreshLayout.setRefreshing(false);
+                mSwipeToLoadLayout.setRefreshing(false);
+                mSwipeToLoadLayout.setLoadingMore(false);
             }
 
             @Override
             public void onFailure(String message) {
                 Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
-                mRefreshLayout.setRefreshing(false);
+                mSwipeToLoadLayout.setRefreshing(false);
+                mSwipeToLoadLayout.setLoadingMore(false);
             }
         });
     }

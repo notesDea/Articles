@@ -8,4 +8,6 @@
     <dimen name="textsize_posts_title">30sp</dimen>
     <dimen name="margin_posts">15dp</dimen>
     <dimen name="height_toolbar">50dp</dimen>
+    <dimen name="height_header_view">60dp</dimen>
+    <dimen name="height_footer_view">60dp</dimen>
 </resources>
