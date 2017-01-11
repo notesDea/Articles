@@ -37,7 +37,12 @@ public class SwipeRefreshLayout extends FrameLayout implements SwipeTrigger, Swi
     }
 
     @Override
-    public void onMove(int y, boolean automatic) {
+    public void onMove(int y, boolean isComplete, boolean automatic) {
+
+    }
+
+    @Override
+    public void onComplete() {
 
     }
 

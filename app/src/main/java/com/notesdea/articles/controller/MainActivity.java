@@ -26,9 +26,10 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements
         OnRefreshListener, OnLoadMoreListener {
 
+    private static final String TAG = MainActivity.class.getSimpleName();
     //工具栏
     private Toolbar mToolbar;
-    //todo add annotation
+    //带有下拉刷新, 上拉加载的Layout
     private SwipeToLoadLayout mSwipeToLoadLayout;
     //存储数据的视图
     private RecyclerView mRecycler;
@@ -60,10 +61,29 @@ public class MainActivity extends AppCompatActivity implements
     private void initView() {
         mToolbar = (Toolbar) findViewById(R.id.toolbar_main);
         setSupportActionBar(mToolbar);
-        mSwipeToLoadLayout = (SwipeToLoadLayout) findViewById(R.id.swipe_refresh_layout);
+        mSwipeToLoadLayout = (SwipeToLoadLayout) findViewById(R.id.swipe_layout_main);
         mSwipeToLoadLayout.setOnRefreshListener(this);
         mSwipeToLoadLayout.setOnLoadMoreListener(this);
         mRecycler = (RecyclerView) findViewById(R.id.swipe_target);
+        //通过滚动判断是否加载更多
+        mRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                int lastCompletelyVisibleItemPosition = layoutManager.findLastCompletelyVisibleItemPosition();
+                int totalItemCount = layoutManager.getItemCount();
+
+                if (newState == RecyclerView.SCROLL_STATE_IDLE &&
+                        lastCompletelyVisibleItemPosition == totalItemCount - 1) {
+                    mSwipeToLoadLayout.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mSwipeToLoadLayout.setLoadingMore(true);
+                        }
+                    });
+                }
+            }
+        });
         mLinearLayoutManager = new LinearLayoutManager(this);
         mRecycler.setLayoutManager(mLinearLayoutManager);
         //添加适配器

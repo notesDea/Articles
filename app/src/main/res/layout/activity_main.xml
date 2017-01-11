@@ -17,10 +17,9 @@
         android:layout_height="@dimen/height_toolbar" />
 
     <com.notesdea.articles.model.refreshload.view.SwipeToLoadLayout
-        android:id="@+id/swipe_refresh_layout"
+        android:id="@+id/swipe_layout_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <!--todo change id name-->
 
         <include
             android:id="@id/swipe_refresh_header"

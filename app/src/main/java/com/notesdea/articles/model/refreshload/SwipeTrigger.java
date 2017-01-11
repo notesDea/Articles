@@ -13,9 +13,13 @@ public interface SwipeTrigger {
     /**
      * 在移动时调用
      * @param y 移动的距离
+     * @param isComplete 判断是否已完成
      * @param automatic 是否要开启自动
      */
-    void onMove(int y, boolean automatic);
+    void onMove(int y, boolean isComplete, boolean automatic);
+
+    //完成释放后调用
+    void onComplete();
 
     //在释放时调用
     void onRelease();

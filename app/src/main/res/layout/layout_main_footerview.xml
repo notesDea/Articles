@@ -9,7 +9,7 @@
 
         <TextView
             android:id="@+id/text_load_more"
-            android:text="下拉刷新"
+            android:text="@string/all_load_more"
             android:gravity="center"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />

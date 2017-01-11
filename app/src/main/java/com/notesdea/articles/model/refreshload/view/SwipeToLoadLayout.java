@@ -430,9 +430,9 @@ public class SwipeToLoadLayout extends LinearLayout {
     private void fingerScrolling(float dy) {
         float scrollY = dy * mDragRatio;
         if (isRefreshStatus()) {
-            mRefreshCallback.onMove(mTargetOffset, false);
+            mRefreshCallback.onMove(mTargetOffset, false, false);
         } else if (isLoadMoreStatus()) {
-            mLoadMoreCallback.onMove(mTargetOffset, false);
+            mLoadMoreCallback.onMove(mTargetOffset, false, false);
         }
         updateScroll(scrollY);
 
@@ -554,7 +554,7 @@ public class SwipeToLoadLayout extends LinearLayout {
 
     //滚动：从默认到正在加载状态
     private void scrollDefault2LoadingMore() {
-        mAutoScroller.autoScroll((int) (mLoadMoreTriggerOffset + 0.5), mDefault2LoadingMoreDuration);
+        mAutoScroller.autoScroll(-(int) (mLoadMoreTriggerOffset + 0.5), mDefault2LoadingMoreDuration);
     }
 
     /**
@@ -564,22 +564,22 @@ public class SwipeToLoadLayout extends LinearLayout {
     private void autoScrolling(int dy) {
         switch (mStatus) {
             case STATUS_REFRESH_SWIPING:
-                mRefreshCallback.onMove(mTargetOffset, false);
+                mRefreshCallback.onMove(mTargetOffset, false, false);
                 break;
             case STATUS_REFRESH_RELEASE:
-                mRefreshCallback.onMove(mTargetOffset, false);
+                mRefreshCallback.onMove(mTargetOffset, false, false);
                 break;
             case STATUS_REFRESHING:
-                mRefreshCallback.onMove(mTargetOffset, false);
+                mRefreshCallback.onMove(mTargetOffset, true, false);
                 break;
             case STATUS_LOAD_MORE_SWIPING:
-                mLoadMoreCallback.onMove(mTargetOffset, false);
+                mLoadMoreCallback.onMove(mTargetOffset, false, false);
                 break;
             case STATUS_LOAD_MORE_RELEASE:
-                mLoadMoreCallback.onMove(mTargetOffset, false);
+                mLoadMoreCallback.onMove(mTargetOffset, false, false);
                 break;
             case STATUS_LOADING_MORE:
-                mLoadMoreCallback.onMove(mTargetOffset, false);
+                mLoadMoreCallback.onMove(mTargetOffset, true, false);
                 break;
         }
         updateScroll(dy);
@@ -624,18 +624,26 @@ public class SwipeToLoadLayout extends LinearLayout {
         } else {
             //状态设置在 onScrollFinished() 里完成
             if (mStatus == STATUS_REFRESHING) {
-                scrollRefreshing2Default();
+                mRefreshCallback.onComplete();
+                postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        scrollRefreshing2Default();
+                    }
+                }, 2000);
             }
         }
 
     }
 
-    public void setLoadingMore(boolean isAutoLoadingMore) {
-        if (isAutoLoadingMore) {
+    public void setLoadingMore(boolean autoSwiping) {
+        mAutoSwiping = autoSwiping;
+        if (autoSwiping) {
             setStatus(STATUS_LOAD_MORE_SWIPING);
             scrollDefault2LoadingMore();
         } else {
             if (mStatus == STATUS_LOADING_MORE) {
+                mLoadMoreCallback.onComplete();
                 scrollLoadingMore2Default();
             }
         }
@@ -651,12 +659,12 @@ public class SwipeToLoadLayout extends LinearLayout {
         }
 
         @Override
-        public void onMove(int y, boolean automatic) {
+        public void onMove(int y,boolean isComplete, boolean automatic) {
             if (mHeaderView != null) {
                 if (mHeaderView.getVisibility() != VISIBLE) {
                     mHeaderView.setVisibility(VISIBLE);
                 }
-                ((SwipeTrigger) mHeaderView).onMove(y, automatic);
+                ((SwipeTrigger) mHeaderView).onMove(y, isComplete, automatic);
             }
         }
 
@@ -664,6 +672,13 @@ public class SwipeToLoadLayout extends LinearLayout {
         public void onRelease() {
             if (mHeaderView != null) {
                 ((SwipeTrigger) mHeaderView).onRelease();
+            }
+        }
+
+        @Override
+        public void onComplete() {
+            if (mHeaderView != null) {
+                ((SwipeTrigger) mHeaderView).onComplete();
             }
         }
 
@@ -698,12 +713,12 @@ public class SwipeToLoadLayout extends LinearLayout {
         }
 
         @Override
-        public void onMove(int y, boolean automatic) {
+        public void onMove(int y, boolean isComplete, boolean automatic) {
             if (mFooterView != null) {
                 if (mFooterView.getVisibility() != VISIBLE) {
                     mFooterView.setVisibility(VISIBLE);
                 }
-                ((SwipeTrigger) mFooterView).onMove(y, automatic);
+                ((SwipeTrigger) mFooterView).onMove(y, isComplete, automatic);
             }
         }
 
@@ -711,6 +726,13 @@ public class SwipeToLoadLayout extends LinearLayout {
         public void onRelease() {
             if (mFooterView != null) {
                 ((SwipeTrigger) mFooterView).onRelease();
+            }
+        }
+
+        @Override
+        public void onComplete() {
+            if (mFooterView != null) {
+                ((SwipeTrigger) mFooterView).onComplete();
             }
         }
 

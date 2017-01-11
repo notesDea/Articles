@@ -2,8 +2,10 @@ package com.notesdea.articles.view;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.widget.TextView;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.notesdea.articles.R;
 import com.notesdea.articles.model.refreshload.view.SwipeRefreshLayout;
@@ -13,10 +15,20 @@ import com.notesdea.articles.model.refreshload.view.SwipeRefreshLayout;
  */
 
 public class MainHeaderView extends SwipeRefreshLayout {
-    private static final String TAG = MainHeaderView.class.getSimpleName();
 
-    private TextView mTextRefresh;
+    private static final String TAG = MainHeaderView.class.getSimpleName();
+    //整个 HeaderView 的高度
     private int mHeaderHeight;
+    //正在刷新时显示的进度条
+    private ProgressBar mProgressBar;
+    //箭头图片
+    private ImageView mImageArrow;
+    //释放时箭头的动画（向上）
+    private Animation mArrowRelease;
+    //下拉时箭头的动画（向下）
+    private Animation mArrowSwipe;
+    //判断是否已旋转
+    private boolean mRotated;
 
     public MainHeaderView(Context context) {
         this(context, null);
@@ -28,13 +40,16 @@ public class MainHeaderView extends SwipeRefreshLayout {
 
     public MainHeaderView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        mHeaderHeight = getResources().getDimensionPixelOffset(R.dimen.height_header_view);
+        mArrowRelease = AnimationUtils.loadAnimation(context, R.anim.rotate_up);
+        mArrowSwipe = AnimationUtils.loadAnimation(context, R.anim.rotate_down);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
-        mHeaderHeight = getResources().getDimensionPixelOffset(R.dimen.height_header_view);
-        mTextRefresh = (TextView) findViewById(R.id.text_refresh);
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        mImageArrow = (ImageView) findViewById(R.id.image_pull_arrow);
     }
 
     @Override
@@ -43,23 +58,39 @@ public class MainHeaderView extends SwipeRefreshLayout {
     }
 
     @Override
-    public void onMove(int y, boolean automatic) {
-        if (y >= mHeaderHeight) {
-            mTextRefresh.setText("释放刷新");
-        } else {
-            mTextRefresh.setText("下拉刷新");
+    public void onMove(int y, boolean isComplete, boolean automatic) {
+        if (!isComplete) {
+            mProgressBar.setVisibility(GONE);
+            mImageArrow.setVisibility(VISIBLE);
+
+            if (y >= mHeaderHeight) {
+                if (!mRotated) {
+                    mImageArrow.clearAnimation();
+                    mImageArrow.startAnimation(mArrowRelease);
+                    mRotated = true;
+                }
+            } else {
+                if (mRotated) {
+                    mImageArrow.clearAnimation();
+                    mImageArrow.startAnimation(mArrowSwipe);
+                    mRotated = false;
+                }
+            }
         }
     }
 
     @Override
-    public void onRelease() {
-        super.onRelease();
+    public void onComplete() {
+        mImageArrow.clearAnimation();
+        mImageArrow.setVisibility(GONE);
+        mProgressBar.setVisibility(VISIBLE);
     }
 
     @Override
-    public void onRefresh() {
-        Log.d(TAG, "onRefresh: ");
-        super.onRefresh();
-        mTextRefresh.setText("正在刷新");
+    public void onReset() {
+        mRotated = false;
+        mImageArrow.clearAnimation();
+        mImageArrow.setVisibility(GONE);
+        mProgressBar.setVisibility(GONE);
     }
 }
